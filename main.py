@@ -22,7 +22,7 @@ speedUpInterval = 2000
 
 shouldLoop = False
 
-debug = False
+debug = True
 
 stateTracker = {"currentLine": 1, 
                 "timeOffset": 0.0,
@@ -90,11 +90,14 @@ try:
         if stateTracker['currentLine'] % speedUpInterval == 0:
             stateTracker['speedUpOffset'] += speedUpFactor
 
+        # If timeDelta is positive, we can output logs. 
+        # If timeDelta is negative we sleep for a fraction of a second (sometime multiple times) to keep in sync with current time.
         stateTracker['timeDelta'] = (time.time() + float(stateTracker['speedUpOffset'])) - (float(currentLineJson['time']) + float(stateTracker['timeOffset']))
 
         if debug:
             print("Line", int(stateTracker['currentLine']), "Time Delta:", stateTracker['timeDelta'])
 
+        # Send a log message to Splunk via HEC
         if stateTracker['timeDelta'] >= 0:
             eventJson = {"time": time.time(), 
                         "index": splunkIndex, 
@@ -103,13 +106,17 @@ try:
                         "sourcetype":currentLineJson['sourcetype'],  
                         "event": currentLineJson['event'] }
             r = requests.post(splunkUrl, headers=splunkAuthHeader, json=eventJson, verify=False)
-            if debug:
-                print("Sent Line: ", stateTracker['currentLine'])
-
-
+ 
+            # Default reporting (every 2000 events)
             if stateTracker['currentLine'] % stateTrackerReportingFactor == 0:
                 print("State Tracker:", stateTracker)
 
+            # Debug reporting (every event)
+            if debug:
+                print("Sent Line: ", stateTracker['currentLine'])
+
+            # Updated state file every 100 events by default 
+            # (happens automatically on KeyboardInterrupt as well)
             if stateTracker['currentLine'] % stateTrackerModFactor == 0:
                 file = open(stateFilePath, "w")
                 json.dump(stateTracker, file)
@@ -127,9 +134,9 @@ try:
 
             # If we reach EoF and shouldLoop==False, then delete the state file and exit.
             if int(stateTracker['currentLine']) == int(dataFileLength) and shouldLoop==False:
-                print("Reached EoF - Deleting State File")
                 os.remove(stateFilePath)
-                print("Reached EoF - Quitting")
+                print("Reached EoF - Deleted State File")
+                print("Reached EoF - Exiting")
                 exit()    
         
 
