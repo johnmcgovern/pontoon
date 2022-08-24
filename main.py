@@ -78,10 +78,14 @@ if os.path.exists(dataFilePath):
     print("Data File Length: ", dataFileLength)
 
 
-# Main loop
-print("Begin Main Loop")
 
+
+
+# Main loop
 try:
+    print("Begin Main Loop")
+    session = requests.session()
+
     while 1==1:
         # Get one line at a time from the data file
         lineData = linecache.getline(dataFilePath, int(stateTracker['currentLine']))
@@ -105,7 +109,7 @@ try:
                         "source":currentLineJson['source'], 
                         "sourcetype":currentLineJson['sourcetype'],  
                         "event": currentLineJson['event'] }
-            r = requests.post(splunkUrl, headers=splunkAuthHeader, json=eventJson, verify=False)
+            r = session.post(splunkUrl, headers=splunkAuthHeader, json=eventJson, verify=False)
  
             # Default reporting (every 2000 events)
             if stateTracker['currentLine'] % stateTrackerReportingFactor == 0:
@@ -139,17 +143,23 @@ try:
                 print("Reached EoF - Exiting")
                 exit()    
         
-
+            # Advance to the next line
             stateTracker['currentLine'] += 1
 
         else:
             time.sleep(.25)
 
+# If we get interrupted at the keyboard (Ctrl^C)
 except KeyboardInterrupt:
+    # Dump current state
     file = open(stateFilePath, "w")
     json.dump(stateTracker, file)
     file.close()
 
+    # Close our network connection
+    session.close()
+
+    # Final logs
     print("Caught Keyboard Interrupt - Quitting")
     print("State Tracker:", stateTracker)
         
