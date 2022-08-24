@@ -10,7 +10,8 @@ import urllib3
 
 
 # Setup Variables
-dataFilePath = "./data/botsv4.json"
+fileKey = "botsv4"
+dataFilePath = "./data/" + fileKey + ".json"
 
 splunkUrl = 'https://wf.splk.me:8088/services/collector/event'
 splunkHecToken = "9802541d-394f-4053-b973-306757e15ed3"
@@ -28,7 +29,7 @@ stateTracker = {"currentLine": 1,
                 "timeOffset": 0.0,
                 "timeDelta": 0.0, 
                 "speedUpOffset": 0 }
-stateFilePath = "./var/pontoon.state"
+stateFilePath = "./var/" + fileKey + ".state"
 stateTrackerReportingFactor = 2000
 stateTrackerWriteToDiskFactor = 1000
 
@@ -79,8 +80,9 @@ if os.path.exists(dataFilePath):
 
 # Main loop
 try:
-    print("Begin Main Loop")
+    #Open a persistent tcp session to Splunk HEC 
     session = requests.session()
+    print("Begin Main Loop")
 
     while 1==1:
         # Get one line at a time from the data file
