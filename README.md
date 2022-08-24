@@ -12,10 +12,12 @@ Project Notes:
 
 - This is not intended to be a data preperation framework. We use Splunk and the splunk-json-cleaner.py script for that piece.
 - Append the following to the Splunk search containing the data you want to export: 
-    | sort 0 _time 
-    | eval time = _time 
-    | eval event = _raw 
-    | table time index host source sourcetype event
+```
+| sort 0 _time 
+| eval time = _time 
+| eval event = _raw 
+| table time index host source sourcetype event
+```
 - This project expects the _time, index, host, source, sourcetype, and event fields to be present in each line of JSON. 
 - Currently we ignore the source index specification for convenience, but this may be togglable in the future.
 - Debug logging turns on per-line output. Use only with small datasets.
