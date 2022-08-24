@@ -18,7 +18,7 @@ Project Notes:
 | eval event = _raw 
 | table time index host source sourcetype event
 ```
-- This project expects the _time, index, host, source, sourcetype, and event fields to be present in each line of JSON. 
+- This project expects the time, index, host, source, sourcetype, and event fields (not _time or _raw) to be present in each line of JSON. 
 - Currently we ignore the source index specification for convenience, but this may be togglable in the future.
 - Debug logging turns on per-line output. Use only with small datasets.
 - This project has been tested running locally on the Splunk system to approximately 200 events per second.
