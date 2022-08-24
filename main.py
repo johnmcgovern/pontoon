@@ -109,4 +109,3 @@ while 1==1:
         print("Reached EoF - Deleting State File")
         print("Reached EoF - Quitting")
         exit()
-        exit()
