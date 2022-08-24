@@ -22,7 +22,7 @@ speedUpInterval = 2000
 
 shouldLoop = False
 
-debug = True
+debug = False
 
 stateTracker = {"currentLine": 1, 
                 "timeOffset": 0.0,
@@ -30,7 +30,7 @@ stateTracker = {"currentLine": 1,
                 "speedUpOffset": 0 }
 stateFilePath = "./var/pontoon.state"
 stateTrackerReportingFactor = 2000
-stateTrackerModFactor = 100
+stateTrackerWriteToDiskFactor = 1000
 
 
 print("Data File Location: ", dataFilePath)
@@ -43,12 +43,12 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 if os.path.exists(stateFilePath): 
     stateFile = open(stateFilePath, "r")
     stateTracker = json.loads(stateFile.read())
-    print("Loaded State File: ", stateTracker)
     stateFile.close()
+    print("Loaded State File: ", stateTracker)
 
 # If state file doesn't exit, write one
 if not os.path.exists(stateFilePath):
-    print("Creating State File: ", stateFilePath)
+    print("Creating New State File: ", stateFilePath)
 
     lineData = linecache.getline(dataFilePath, 1)
     currentLineJson = json.loads(lineData)
@@ -61,11 +61,10 @@ if not os.path.exists(stateFilePath):
     print("State File - Current Timestamp:", time.time())
     print("State File - Calculated Offset: ", stateTracker['timeOffset'])
 
-    print("Writing State File: ", stateTracker)
     file = open(stateFilePath, "w")
     json.dump(stateTracker, file)
     file.close()
-    print("Created State File", stateFilePath)
+    print("Created New State File", stateFilePath)
 
 
 # Check for data file existence and length
@@ -76,9 +75,6 @@ if os.path.exists(dataFilePath):
     dataFileLength += 1
     dataFile.close()
     print("Data File Length: ", dataFileLength)
-
-
-
 
 
 # Main loop
@@ -121,7 +117,7 @@ try:
 
             # Updated state file every 100 events by default 
             # (happens automatically on KeyboardInterrupt as well)
-            if stateTracker['currentLine'] % stateTrackerModFactor == 0:
+            if stateTracker['currentLine'] % stateTrackerWriteToDiskFactor == 0:
                 file = open(stateFilePath, "w")
                 json.dump(stateTracker, file)
                 file.close()
@@ -148,6 +144,7 @@ try:
 
         else:
             time.sleep(.25)
+
 
 # If we get interrupted at the keyboard (Ctrl^C)
 except KeyboardInterrupt:

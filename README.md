@@ -21,7 +21,7 @@ Project Notes:
 - This project expects the time, index, host, source, sourcetype, and event fields (not _time or _raw) to be present in each line of JSON. 
 - Currently we ignore the source index specification for convenience, but this may be togglable in the future.
 - Debug logging turns on per-line output. Use only with small datasets.
-- This project has been tested running locally on the Splunk system to approximately 1000 events per second.
-- Other in-memory projects are orders of magniture faster on the EPS. However, this project is built for large datasets more than speed.
+- This project has been tested running locally on the Splunk system to approximately 1,100+ events per second (EPS).
+- Other in-memory projects are orders of magniture faster on the EPS. However, this project is built for large datasets / low resource consumption more than speed.
 - HEC is used (JSON endpoint) to data ingestion.
 - Most safeties and exception handling in general are missing right now in the early stages.
