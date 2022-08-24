@@ -10,7 +10,7 @@ import urllib3
 
 
 # Setup Variables
-dataFilePath = "./data/sample.json"
+dataFilePath = "./data/botsv4.json"
 
 splunkUrl = 'https://wf.splk.me:8088/services/collector/event'
 splunkHecToken = "9802541d-394f-4053-b973-306757e15ed3"
@@ -20,6 +20,8 @@ splunkAuthHeader = {'Authorization': 'Splunk {}'.format(splunkHecToken)}
 speedUpFactor = 0
 
 shouldLoop = False
+
+debug = False
 
 stateTracker = {"currentLine": 1, "timeOffset": 0.0, "speedUpOffset": 0 }
 stateFilePath = "./var/sample.state"
@@ -77,18 +79,20 @@ while 1==1:
 
     stateTracker['speedUpOffset'] += speedUpFactor
 
-    print("Line", int(stateTracker['currentLine']),"Time Delta: ", time.time() - (float(currentLineJson['time']) + float(stateTracker['timeOffset']) + float(stateTracker['speedUpOffset'])))
+    if debug:
+        print("Line", int(stateTracker['currentLine']),"Time Delta: ", time.time() - (float(currentLineJson['time']) + float(stateTracker['timeOffset']) + float(stateTracker['speedUpOffset'])))
 
     if (float(currentLineJson['time']) + float(stateTracker['timeOffset']) + float(stateTracker['speedUpOffset'])) <= time.time():
         eventJson = {"time": time.time(), "index": splunkIndex, "host":currentLineJson['host'], "source":currentLineJson['source'], "sourcetype":currentLineJson['sourcetype'],  "event": currentLineJson['event'] }
         r = requests.post(splunkUrl, headers=splunkAuthHeader, json=eventJson, verify=False)
-        print("Sent Line: ", stateTracker['currentLine'])
+        if debug:
+            print("Sent Line: ", stateTracker['currentLine'])
 
         file = open(stateFilePath, "w")
         json.dump(stateTracker, file)
         file.close()
 
-        time.sleep(.001)
+        # time.sleep(.001)
 
         if int(stateTracker['currentLine']) == int(dataFileLength) and shouldLoop==True:
             print("Reached EoF - Starting Over ", stateTracker)
