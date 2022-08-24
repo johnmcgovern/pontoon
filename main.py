@@ -11,7 +11,6 @@ import urllib3
 
 # Setup Variables
 dataFilePath = "./data/sample.json"
-dataFileLength = 0
 
 splunkUrl = 'https://wf.splk.me:8088/services/collector/event'
 splunkHecToken = "9802541d-394f-4053-b973-306757e15ed3"
@@ -19,6 +18,7 @@ splunkIndex = "test"   # Currently we always override the data files index speci
 splunkAuthHeader = {'Authorization': 'Splunk {}'.format(splunkHecToken)}
 
 speedUpFactor = 0
+
 shouldLoop = False
 
 stateTracker = {"currentLine": 1, "timeOffset": 0.0, "speedUpOffset": 0 }
@@ -77,35 +77,38 @@ while 1==1:
 
     stateTracker['speedUpOffset'] += speedUpFactor
 
-    print("Line ", int(stateTracker['currentLine']),"Time Delta: ", time.time() - (float(currentLineJson['time']) + float(stateTracker['timeOffset']) + float(stateTracker['speedUpOffset'])))
+    print("Line", int(stateTracker['currentLine']),"Time Delta: ", time.time() - (float(currentLineJson['time']) + float(stateTracker['timeOffset']) + float(stateTracker['speedUpOffset'])))
 
     if (float(currentLineJson['time']) + float(stateTracker['timeOffset']) + float(stateTracker['speedUpOffset'])) <= time.time():
         eventJson = {"time": time.time(), "index": splunkIndex, "host":currentLineJson['host'], "source":currentLineJson['source'], "sourcetype":currentLineJson['sourcetype'],  "event": currentLineJson['event'] }
         r = requests.post(splunkUrl, headers=splunkAuthHeader, json=eventJson, verify=False)
         print("Sent Line: ", stateTracker['currentLine'])
-        stateTracker['currentLine'] += 1
 
         file = open(stateFilePath, "w")
         json.dump(stateTracker, file)
         file.close()
 
         time.sleep(.001)
+
+        if int(stateTracker['currentLine']) == int(dataFileLength) and shouldLoop==True:
+            print("Reached EoF - Starting Over ", stateTracker)
+            stateTracker['currentLine'] = 1
+            lineData = linecache.getline(dataFilePath, int(stateTracker['currentLine']))
+            currentLineJson = json.loads(lineData)
+            stateTracker['timeOffset'] = time.time() - float(currentLineJson['time'])
+            stateTracker['speedUpOffset'] = 0
+            print("State Reset Completed", stateTracker)
     
+        if int(stateTracker['currentLine']) == int(dataFileLength) and shouldLoop==False:
+            print("Reached EoF - Deleting State File")
+            os.remove(stateFilePath)
+            print("Reached EoF - Quitting")
+            exit()    
+    
+        stateTracker['currentLine'] += 1
+
     else:
         # Sleep almost a second
-        time.sleep(.99)
+        time.sleep(.95)
     
-    if int(stateTracker['currentLine']) == int(dataFileLength) and shouldLoop==True:
-        print("Reached EoF - Starting Over ", stateTracker)
-        stateTracker['currentLine'] = 1
-        lineData = linecache.getline(dataFilePath, int(stateTracker['currentLine']))
-        currentLineJson = json.loads(lineData)
-        stateTracker['timeOffset'] = time.time() - float(currentLineJson['time'])
-        stateTracker['speedUpOffset'] = 0
-        print("State Reset Completed", stateTracker)
-    
-    if int(stateTracker['currentLine']) == int(dataFileLength) and shouldLoop==False:
-        os.remove(stateFilePath)
-        print("Reached EoF - Deleting State File")
-        print("Reached EoF - Quitting")
-        exit()
+
