@@ -18,7 +18,7 @@ splunkIndex = "test"   # Currently we always override the data files index speci
 splunkAuthHeader = {'Authorization': 'Splunk {}'.format(splunkHecToken)}
 
 speedUpFactor = 2
-speedUpInterval = 5000
+speedUpInterval = 2000
 
 shouldLoop = False
 
@@ -53,13 +53,13 @@ if not os.path.exists(stateFilePath):
     lineData = linecache.getline(dataFilePath, 1)
     currentLineJson = json.loads(lineData)
     firstEpochTime = currentLineJson["time"]
-    print("State File - First Time", firstEpochTime)
+    print("State File - First Timestamp", firstEpochTime)
 
     lineData = linecache.getline(dataFilePath, 1)
     currentLineJson = json.loads(lineData)
     stateTracker['timeOffset'] = time.time() - float(currentLineJson['time'])
-    print("State File - Current Time:", time.time())
-    print("State File - Offset: ", stateTracker['timeOffset'])
+    print("State File - Current Timestamp:", time.time())
+    print("State File - Calculated Offset: ", stateTracker['timeOffset'])
 
     print("Writing State File: ", stateTracker)
     file = open(stateFilePath, "w")
