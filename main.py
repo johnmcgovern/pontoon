@@ -19,6 +19,7 @@ splunkIndex = "test"   # Currently we always override the data files index speci
 splunkAuthHeader = {'Authorization': 'Splunk {}'.format(splunkHecToken)}
 
 speedUpFactor = 2
+speedUpFactorWhileSleeping = 2
 speedUpInterval = 2000
 
 shouldLoop = False
@@ -145,7 +146,11 @@ try:
             stateTracker['currentLine'] += 1
 
         else:
+            # If we don't have any data available for the given second then sleep
+            # and also fast forward by speedUpFactorWhileSleeping 
+            # so we don't have to sleep to long
             time.sleep(.25)
+            stateTracker['speedUpOffset'] += speedUpFactorWhileSleeping
 
 
 # If we get interrupted at the keyboard (Ctrl^C)
