@@ -160,3 +160,5 @@ data/*
 
 var/*
 !var/README.md
+
+config.py

@@ -8,39 +8,22 @@ import requests
 import time
 import urllib3
 
+from config import *
 
-# Setup Variables
-fileKey = "botsv4"
-dataFilePath = "./data/" + fileKey + ".json"
-
-splunkUrl = 'https://wf.splk.me:8088/services/collector/event'
-splunkHecToken = "9802541d-394f-4053-b973-306757e15ed3"
-splunkIndex = "test"   # Currently we always override the data files index specification (but this may change)
-splunkAuthHeader = {'Authorization': 'Splunk {}'.format(splunkHecToken)}
-
-speedUpFactor = 2
-speedUpFactorWhileSleeping = 1
-speedUpInterval = 2000
-
-shouldLoop = False
-
-debug = False
-
-stateTracker = {"currentLine": 1, 
-                "timeOffset": 0.0,
-                "timeDelta": 0.0, 
-                "speedUpOffset": 0 }
-stateFilePath = "./var/" + fileKey + ".state"
-stateTrackerReportingFactor = 2000
-stateTrackerWriteToDiskFactor = 1000
-
-eventsPerHecBatch = 5
 
 print("Data File Location: ", dataFilePath)
 print("State File Location: ", stateFilePath)
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+# JSON object to hold all of the state information such as line number and time offset
+# Gets written to disk at an interval
+stateTracker = {"currentLine": 1, 
+                "timeOffset": 0.0,
+                "timeDelta": 0.0, 
+                "speedUpOffset": 0 }
 
+splunkAuthHeader = {'Authorization': 'Splunk {}'.format(splunkHecToken)}
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Check if the state file exists and load if so
 if os.path.exists(stateFilePath): 
@@ -162,8 +145,7 @@ try:
             # If we don't have any data available for the given second then sleep
             # and also fast forward by speedUpFactorWhileSleeping 
             # so we don't have to sleep to long
-            time.sleep(.25)
-            stateTracker['speedUpOffset'] += speedUpFactorWhileSleeping
+            time.sleep(.48)
 
 
 # If we get interrupted at the keyboard (Ctrl^C)
@@ -173,7 +155,7 @@ except KeyboardInterrupt:
     json.dump(stateTracker, file)
     file.close()
 
-    # Close our network connection
+    # Close our HEC session
     session.close()
 
     # Final logs
