@@ -19,7 +19,7 @@ print("State File Location: ", stateFilePath)
 stateTracker = {"currentLine": 1, 
                 "timeOffset": 0.0,
                 "timeDelta": 0.0, 
-                "speedUpOffset": 0 }
+                "speedUpOffsetx": 0 }
 
 splunkAuthHeader = {'Authorization': 'Splunk {}'.format(splunkHecToken)}
 
@@ -68,6 +68,7 @@ try:
     #Open a persistent tcp session to Splunk HEC 
     session = requests.session()
     eventJsonStorage = ""
+    sleepCounter = 0
     print("Begin Main Loop")
 
     while 1==1:
@@ -83,10 +84,11 @@ try:
         stateTracker['timeDelta'] = (time.time() + float(stateTracker['speedUpOffset'])) - (float(currentLineJson['time']) + float(stateTracker['timeOffset']))
 
         if debug:
-            print("Line", int(stateTracker['currentLine']), "Time Delta:", stateTracker['timeDelta'])
+            print("State Tracker:", stateTracker)
 
         # Send a log message to Splunk via HEC
         if stateTracker['timeDelta'] >= 0:
+            sleepCounter = 0
             eventJson = {"time": time.time(), 
                         "index": splunkIndex, 
                         "host":currentLineJson['host'], 
@@ -101,16 +103,16 @@ try:
             if stateTracker['currentLine'] % eventsPerHecBatch == 0:                        
                 r = session.post(splunkUrl, headers=splunkAuthHeader, data=eventJsonStorage, verify=False)
                 eventJsonStorage = ""
+
+                # Debug reporting (every event)
+                if debug:
+                    print("-> Sent up to Line: ", stateTracker['currentLine'])
  
             # Default reporting (every 2000 events)
             if stateTracker['currentLine'] % stateTrackerReportingFactor == 0:
                 print("State Tracker:", stateTracker)
 
-            # Debug reporting (every event)
-            if debug:
-                print("Sent Line: ", stateTracker['currentLine'])
-
-            # Updated state file every 100 events by default 
+            # Updated state file every stateTrackerWriteToDiskFactor events
             # (happens automatically on KeyboardInterrupt as well)
             if stateTracker['currentLine'] % stateTrackerWriteToDiskFactor == 0:
                 file = open(stateFilePath, "w")
@@ -145,6 +147,8 @@ try:
             # If we don't have any data available for the given second then sleep
             # and also fast forward by speedUpFactorWhileSleeping 
             # so we don't have to sleep to long
+            sleepCounter += 1
+            stateTracker['speedUpOffset'] += (sleepCounter ** 2)
             time.sleep(.48)
 
 
