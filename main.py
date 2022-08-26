@@ -19,7 +19,7 @@ splunkIndex = "test"   # Currently we always override the data files index speci
 splunkAuthHeader = {'Authorization': 'Splunk {}'.format(splunkHecToken)}
 
 speedUpFactor = 2
-speedUpFactorWhileSleeping = 2
+speedUpFactorWhileSleeping = 1
 speedUpInterval = 2000
 
 shouldLoop = False
@@ -34,6 +34,7 @@ stateFilePath = "./var/" + fileKey + ".state"
 stateTrackerReportingFactor = 2000
 stateTrackerWriteToDiskFactor = 1000
 
+eventsPerHecBatch = 5
 
 print("Data File Location: ", dataFilePath)
 print("State File Location: ", stateFilePath)
@@ -83,6 +84,7 @@ if os.path.exists(dataFilePath):
 try:
     #Open a persistent tcp session to Splunk HEC 
     session = requests.session()
+    eventJsonStorage = ""
     print("Begin Main Loop")
 
     while 1==1:
@@ -108,7 +110,14 @@ try:
                         "source":currentLineJson['source'], 
                         "sourcetype":currentLineJson['sourcetype'],  
                         "event": currentLineJson['event'] }
-            r = session.post(splunkUrl, headers=splunkAuthHeader, json=eventJson, verify=False)
+
+            # Group events together for sending as a batch
+            eventJsonStorage += json.dumps(eventJson) + "\r\n"
+
+            # Mod the currentLine to send as a batch per the eventsPerHecBatch factor
+            if stateTracker['currentLine'] % eventsPerHecBatch == 0:                        
+                r = session.post(splunkUrl, headers=splunkAuthHeader, data=eventJsonStorage, verify=False)
+                eventJsonStorage = ""
  
             # Default reporting (every 2000 events)
             if stateTracker['currentLine'] % stateTrackerReportingFactor == 0:
@@ -128,6 +137,8 @@ try:
             # If we reach EoF and shouldLoop==True, then reset the stateTracker and start over.
             if int(stateTracker['currentLine']) == int(dataFileLength) and shouldLoop==True:
                 print("Reached EoF - Starting Over ", stateTracker)
+                r = session.post(splunkUrl, headers=splunkAuthHeader, data=eventJsonStorage, verify=False)
+                eventJsonStorage = ""
                 stateTracker['currentLine'] = 1
                 lineData = linecache.getline(dataFilePath, int(stateTracker['currentLine']))
                 currentLineJson = json.loads(lineData)
@@ -137,6 +148,8 @@ try:
 
             # If we reach EoF and shouldLoop==False, then delete the state file and exit.
             if int(stateTracker['currentLine']) == int(dataFileLength) and shouldLoop==False:
+                r = session.post(splunkUrl, headers=splunkAuthHeader, data=eventJsonStorage, verify=False)
+                eventJsonStorage = ""
                 os.remove(stateFilePath)
                 print("Reached EoF - Deleted State File")
                 print("Reached EoF - Exiting")
