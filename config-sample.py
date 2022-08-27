@@ -16,4 +16,4 @@ speedUpInterval = 2000
 stateTrackerReportingFactor = 2000
 stateTrackerWriteToDiskFactor = 1000
 
-eventsPerHecBatch = 5
+eventsPerHecBatch = 10
