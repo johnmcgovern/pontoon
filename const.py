@@ -1,23 +1,18 @@
 #
-# const.py - Predefined or computed variables.
+# const.py - Static and calculated variables.
 #
 
 import urllib3
 
 from config import *
 
-# JSON object to hold all of the state information such as line number and time offset
-# Gets written to disk at an interval
-stateTracker = {"currentLine": 1, 
-                "timeOffset": 0.0,
-                "timeDelta": 0.0, 
-                "speedUpOffset": 0 }
 
-dataFileLength = 0
+
+eventJsonStorage = ""
 
 splunkAuthHeader = {'Authorization': 'Splunk {}'.format(splunkHecToken)}
 
-eventJsonStorage = ""
+dataFileLength = 0
 
 sleepCounter = 0
 

@@ -16,25 +16,34 @@ def load_state_file():
     stateTracker = json.loads(stateFile.read())
     stateFile.close()
     print("Loaded State File: ", stateTracker)
+    return stateTracker
 
 def create_state_file():
+
+    # Instantiate a stateTracker JSON object
+    stateTracker = {"currentLine": 1, 
+                    "timeOffset": 0.0,
+                    "timeDelta": 0.0, 
+                    "speedUpOffset": 0 }
+
     print("Creating New State File: ", stateFilePath)
 
+    # Open the first line of the data file
     lineData = linecache.getline(dataFilePath, 1)
     currentLineJson = json.loads(lineData)
-    firstEpochTime = currentLineJson["time"]
-    print("State File - First Timestamp", firstEpochTime)
-
-    lineData = linecache.getline(dataFilePath, 1)
-    currentLineJson = json.loads(lineData)
+    
+    # Calculate the difference between current time and the first line epoch time
     stateTracker['timeOffset'] = time.time() - float(currentLineJson['time'])
+
+    print("State File - First Timestamp", currentLineJson["time"])
     print("State File - Current Timestamp:", time.time())
     print("State File - Calculated Offset: ", stateTracker['timeOffset'])
 
-    file = open(stateFilePath, "w")
-    json.dump(stateTracker, file)
-    file.close()
-    print("Created New State File", stateFilePath)    
+    # Write the new state file to disk (with currentLine=1 and calculated timeOffset)
+    write_state_to_disk(stateTracker)
+    print("Created New State File", stateFilePath)
+
+    return stateTracker    
 
 
 def get_data_file_length():
@@ -44,9 +53,10 @@ def get_data_file_length():
     dataFileLength += 1
     dataFile.close()
     print("Data File Length:", dataFileLength)
+    return dataFileLength
 
 
-def write_state_to_disk():
+def write_state_to_disk(stateTracker):
     file = open(stateFilePath, "w")
     json.dump(stateTracker, file)
     file.close()       

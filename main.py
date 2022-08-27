@@ -15,18 +15,19 @@ from file import *
 print("Data File Location: ", dataFilePath)
 print("State File Location: ", stateFilePath)
 
-# Check if the state file exists and load if so
+
+# Check if the state file exists and load it so we maintain state
 if os.path.exists(stateFilePath): 
-    load_state_file()
+    stateTracker = load_state_file()
 
 # If state file doesn't exit, write one
 if not os.path.exists(stateFilePath):
-    create_state_file()
+    stateTracker = create_state_file()
 
 
 # Check for data file existence and length
 if os.path.exists(dataFilePath):
-    get_data_file_length()
+   dataFileLength = get_data_file_length()
 
 
 # Main loop
@@ -34,6 +35,8 @@ try:
     #Open a persistent tcp session to Splunk HEC 
     session = requests.session()
     print("Begin Main Loop")
+    print("Event Batch Size:", eventsPerHecBatch)
+    print("Starting at Line:", stateTracker['currentLine'])
 
     while 1==1:
         # Get one line at a time from the data file
@@ -79,7 +82,7 @@ try:
             # Updated state file every stateTrackerWriteToDiskFactor events
             # (happens automatically on KeyboardInterrupt as well)
             if stateTracker['currentLine'] % stateTrackerWriteToDiskFactor == 0:
-                write_state_to_disk()
+                write_state_to_disk(stateTracker)
 
             # If we reach EoF and shouldLoop==True, then reset the stateTracker and start over.
             if int(stateTracker['currentLine']) == int(dataFileLength) and shouldLoop==True:
@@ -116,7 +119,7 @@ try:
 # If we get interrupted at the keyboard (Ctrl^C)
 except KeyboardInterrupt:
     # Dump current state
-    write_state_to_disk()
+    write_state_to_disk(stateTracker)
 
     # Close our HEC session
     session.close()
