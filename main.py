@@ -19,7 +19,7 @@ print("State File Location: ", stateFilePath)
 stateTracker = {"currentLine": 1, 
                 "timeOffset": 0.0,
                 "timeDelta": 0.0, 
-                "speedUpOffsetx": 0 }
+                "speedUpOffset": 0 }
 
 splunkAuthHeader = {'Authorization': 'Splunk {}'.format(splunkHecToken)}
 
@@ -144,9 +144,9 @@ try:
             stateTracker['currentLine'] += 1
 
         else:
-            # If we don't have any data available for the given second then sleep
-            # and also fast forward by speedUpFactorWhileSleeping 
-            # so we don't have to sleep to long
+            # If we don't have any data available for the given second then sleep.
+            # Fast forward number of times slept (sleepCounter) to the power of 2
+            # so we don't have to sleep too long.
             sleepCounter += 1
             stateTracker['speedUpOffset'] += (sleepCounter ** 2)
             time.sleep(.48)
