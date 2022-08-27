@@ -20,7 +20,7 @@ def load_state_file():
 
 def create_state_file():
 
-    # Instantiate a stateTracker JSON object
+    # Instantiate a default stateTracker JSON object
     stateTracker = {"currentLine": 1, 
                     "timeOffset": 0.0,
                     "timeDelta": 0.0, 
