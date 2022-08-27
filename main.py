@@ -16,14 +16,13 @@ print("Data File Location: ", dataFilePath)
 print("State File Location: ", stateFilePath)
 
 
-# Check if the state file exists and load it so we maintain state
+# If the state file exists and load it so we maintain state
 if os.path.exists(stateFilePath): 
     stateTracker = load_state_file()
 
-# If state file doesn't exit, write one
+# If state file doesn't exit, create one
 if not os.path.exists(stateFilePath):
     stateTracker = create_state_file()
-
 
 # Check for data file existence and length
 if os.path.exists(dataFilePath):
@@ -40,8 +39,7 @@ try:
 
     while 1==1:
         # Get one line at a time from the data file
-        lineData = linecache.getline(dataFilePath, int(stateTracker['currentLine']))
-        currentLineJson = json.loads(lineData)
+        currentLineJson = load_line(int(stateTracker['currentLine']))
 
         if stateTracker['currentLine'] % speedUpInterval == 0:
             stateTracker['speedUpOffset'] += speedUpFactor
@@ -87,13 +85,16 @@ try:
             # If we reach EoF and shouldLoop==True, then reset the stateTracker and start over.
             if int(stateTracker['currentLine']) == int(dataFileLength) and shouldLoop==True:
                 print("Reached EoF - Starting Over ", stateTracker)
+                
                 r = session.post(splunkUrl, headers=splunkAuthHeader, data=eventJsonStorage, verify=False)
                 eventJsonStorage = ""
+                
                 stateTracker['currentLine'] = 1
-                lineData = linecache.getline(dataFilePath, int(stateTracker['currentLine']))
-                currentLineJson = json.loads(lineData)
+                currentLineJson = load_line(int(stateTracker['currentLine']))
+                
                 stateTracker['timeOffset'] = time.time() - float(currentLineJson['time'])
                 stateTracker['speedUpOffset'] = 0
+                
                 print("State Reset Completed", stateTracker)
 
             # If we reach EoF and shouldLoop==False, then delete the state file and exit.
@@ -109,11 +110,11 @@ try:
 
         else:
             # If we don't have any data available for the given second then sleep.
-            # Fast forward number of times slept (sleepCounter) to the power of 2
+            # Fast forward number of times slept (sleepCounter) to the power of itself
             # so we don't have to sleep too long.
             sleepCounter += 1
             stateTracker['speedUpOffset'] += (sleepCounter ** 2)
-            time.sleep(.48)
+            time.sleep(.98)
 
 
 # If we get interrupted at the keyboard (Ctrl^C)
