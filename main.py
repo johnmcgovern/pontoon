@@ -6,61 +6,27 @@ import linecache
 import os
 import requests
 import time
-import urllib3
 
 from config import *
+from const import *
+from file import *
 
 
 print("Data File Location: ", dataFilePath)
 print("State File Location: ", stateFilePath)
 
-# JSON object to hold all of the state information such as line number and time offset
-# Gets written to disk at an interval
-stateTracker = {"currentLine": 1, 
-                "timeOffset": 0.0,
-                "timeDelta": 0.0, 
-                "speedUpOffset": 0 }
-
-splunkAuthHeader = {'Authorization': 'Splunk {}'.format(splunkHecToken)}
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 # Check if the state file exists and load if so
 if os.path.exists(stateFilePath): 
-    stateFile = open(stateFilePath, "r")
-    stateTracker = json.loads(stateFile.read())
-    stateFile.close()
-    print("Loaded State File: ", stateTracker)
+    load_state_file()
 
 # If state file doesn't exit, write one
 if not os.path.exists(stateFilePath):
-    print("Creating New State File: ", stateFilePath)
-
-    lineData = linecache.getline(dataFilePath, 1)
-    currentLineJson = json.loads(lineData)
-    firstEpochTime = currentLineJson["time"]
-    print("State File - First Timestamp", firstEpochTime)
-
-    lineData = linecache.getline(dataFilePath, 1)
-    currentLineJson = json.loads(lineData)
-    stateTracker['timeOffset'] = time.time() - float(currentLineJson['time'])
-    print("State File - Current Timestamp:", time.time())
-    print("State File - Calculated Offset: ", stateTracker['timeOffset'])
-
-    file = open(stateFilePath, "w")
-    json.dump(stateTracker, file)
-    file.close()
-    print("Created New State File", stateFilePath)
+    create_state_file()
 
 
 # Check for data file existence and length
 if os.path.exists(dataFilePath):
-    dataFile = open(dataFilePath, "r")
-    for dataFileLength, line in enumerate(dataFile):
-        pass
-    dataFileLength += 1
-    dataFile.close()
-    print("Data File Length: ", dataFileLength)
+    get_data_file_length()
 
 
 # Main loop
