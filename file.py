@@ -4,10 +4,12 @@
 
 import json
 import linecache
+import os
 import time
 
 from config import *
 from const import *
+
 
 def load_state_file():
     stateFile = open(stateFilePath, "r")
@@ -34,6 +36,7 @@ def create_state_file():
     file.close()
     print("Created New State File", stateFilePath)    
 
+
 def get_data_file_length():
     dataFile = open(dataFilePath, "r")
     for dataFileLength, line in enumerate(dataFile):
@@ -41,3 +44,13 @@ def get_data_file_length():
     dataFileLength += 1
     dataFile.close()
     print("Data File Length:", dataFileLength)
+
+
+def write_state_to_disk():
+    file = open(stateFilePath, "w")
+    json.dump(stateTracker, file)
+    file.close()       
+
+def delete_state_file():
+    os.remove(stateFilePath)
+    print("Deleted State File")

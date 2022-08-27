@@ -17,4 +17,8 @@ dataFileLength = 0
 
 splunkAuthHeader = {'Authorization': 'Splunk {}'.format(splunkHecToken)}
 
+eventJsonStorage = ""
+
+sleepCounter = 0
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

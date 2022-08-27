@@ -33,8 +33,6 @@ if os.path.exists(dataFilePath):
 try:
     #Open a persistent tcp session to Splunk HEC 
     session = requests.session()
-    eventJsonStorage = ""
-    sleepCounter = 0
     print("Begin Main Loop")
 
     while 1==1:
@@ -81,9 +79,7 @@ try:
             # Updated state file every stateTrackerWriteToDiskFactor events
             # (happens automatically on KeyboardInterrupt as well)
             if stateTracker['currentLine'] % stateTrackerWriteToDiskFactor == 0:
-                file = open(stateFilePath, "w")
-                json.dump(stateTracker, file)
-                file.close()
+                write_state_to_disk()
 
             # If we reach EoF and shouldLoop==True, then reset the stateTracker and start over.
             if int(stateTracker['currentLine']) == int(dataFileLength) and shouldLoop==True:
@@ -101,8 +97,7 @@ try:
             if int(stateTracker['currentLine']) == int(dataFileLength) and shouldLoop==False:
                 r = session.post(splunkUrl, headers=splunkAuthHeader, data=eventJsonStorage, verify=False)
                 eventJsonStorage = ""
-                os.remove(stateFilePath)
-                print("Reached EoF - Deleted State File")
+                delete_state_file()
                 print("Reached EoF - Exiting")
                 exit()    
         
@@ -121,9 +116,7 @@ try:
 # If we get interrupted at the keyboard (Ctrl^C)
 except KeyboardInterrupt:
     # Dump current state
-    file = open(stateFilePath, "w")
-    json.dump(stateTracker, file)
-    file.close()
+    write_state_to_disk()
 
     # Close our HEC session
     session.close()
