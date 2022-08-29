@@ -36,6 +36,7 @@ try:
     print("Begin Main Loop")
     print("Event Batch Size:", eventsPerHecBatch)
     print("Starting at Line:", stateTracker['currentLine'])
+    print("Indexed to:", splunkIndex)
 
     while 1==1:
         # Get one line at a time from the data file
