@@ -2,7 +2,6 @@
 
 # Imports
 import json
-import linecache
 import os
 import requests
 import time
@@ -40,7 +39,7 @@ try:
 
     while 1==1:
         # Get one line at a time from the data file
-        currentLineJson = load_line(int(stateTracker['currentLine']))
+        currentLineJson = get_line(int(stateTracker['currentLine']))
 
         if stateTracker['currentLine'] % speedUpInterval == 0:
             stateTracker['speedUpOffset'] += speedUpFactor
@@ -91,7 +90,7 @@ try:
                 eventJsonStorage = ""
                 
                 stateTracker['currentLine'] = 1
-                currentLineJson = load_line(int(stateTracker['currentLine']))
+                currentLineJson = get_line(int(stateTracker['currentLine']))
                 
                 stateTracker['timeOffset'] = time.time() - float(currentLineJson['time'])
                 stateTracker['speedUpOffset'] = 0

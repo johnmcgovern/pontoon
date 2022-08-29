@@ -29,7 +29,7 @@ def create_state_file():
     print("Creating New State File: ", stateFilePath)
 
     # Open the first line of the data file
-    currentLineJson = load_line(1)
+    currentLineJson = get_line(1)
     
     # Calculate the difference between current time and the first line epoch time
     stateTracker['timeOffset'] = time.time() - float(currentLineJson['time'])
@@ -55,7 +55,7 @@ def get_data_file_length():
     return dataFileLength
 
 
-def load_line(lineNumber):
+def get_line(lineNumber):
     lineData = linecache.getline(dataFilePath, lineNumber)
     return json.loads(lineData)
 
