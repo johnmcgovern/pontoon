@@ -7,13 +7,13 @@ import urllib3
 from config import *
 
 
+event_json_storage = ""
 
-eventJsonStorage = ""
+splunk_auth_header = {'Authorization': 'Splunk {}'.format(splunk_hec_token)}
 
-splunkAuthHeader = {'Authorization': 'Splunk {}'.format(splunkHecToken)}
+data_file_length = 0
 
-dataFileLength = 0
+sleep_counter = 0
 
-sleepCounter = 0
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

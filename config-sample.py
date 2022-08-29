@@ -1,19 +1,22 @@
-# Configuration Variables
-fileKey = "botsv4"
-dataFilePath = "./data/" + fileKey + ".json"
-stateFilePath = "./var/" + fileKey + ".state"
+#
+# config.py - User modifiable variables.
+#
 
-splunkUrl = 'https://example.splk.me:8088/services/collector/event'
-splunkHecToken = "9802541d-394f-4053-b973-306757e15ed3"
-splunkIndex = "test"   # Currently we always override the data files index specification (but this may change)
+file_key = "botsv4"
+data_file_path = "./data/" + file_key + ".json"
+state_file_path = "./var/" + file_key + ".state"
 
-shouldLoop = False
+splunk_url = "https://example.splk.me:8088/services/collector/event"
+splunk_hec_token = "9802541d-394f-4053-b973-306757e15ed3"
+splunk_index = "test"   # Currently we always override the data files index specification (but this may change)
+
+should_loop = False
 debug = False
 
-speedUpFactor = 2
-speedUpInterval = 2000
+speed_up_factor = 2
+speed_up_interval = 2000
 
-stateTrackerReportingFactor = 2000
-stateTrackerWriteToDiskFactor = 1000
+state_tracker_reporting_factor = 2000
+state_tracker_write_to_disk_factor = 1000
 
-eventsPerHecBatch = 10
+events_per_hec_batch = 10
