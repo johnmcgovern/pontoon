@@ -69,7 +69,7 @@ try:
 
             # Mod the current_line to send as a batch per the eventsPerHecBatch factor
             if state_tracker['current_line'] % events_per_hec_batch == 0:                        
-                r = session.post(splunk_url, headers=splunk_auth_header, data=event_json_storage, verify=False)
+                r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
                 event_json_storage = ""
 
                 # Debug reporting (every event)
@@ -89,7 +89,7 @@ try:
             if int(state_tracker['current_line']) == int(data_file_length) and should_loop==True:
                 print("Reached EoF - Starting Over ", state_tracker)
                 
-                r = session.post(splunk_url, headers=splunk_auth_header, data=event_json_storage, verify=False)
+                r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
                 event_json_storage = ""
                 
                 state_tracker['current_line'] = 1
@@ -102,7 +102,7 @@ try:
 
             # If we reach EoF and should_loop==False, then delete the state file and exit.
             if int(state_tracker['current_line']) == int(data_file_length) and should_loop==False:
-                r = session.post(splunk_url, headers=splunk_auth_header, data=event_json_storage, verify=False)
+                r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
                 event_json_storage = ""
                 delete_state_file()
                 print("Reached EoF - Exiting")
