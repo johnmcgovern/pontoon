@@ -11,7 +11,7 @@ from config import *
 from const import *
 
 
-def load_state_file():
+def load_state_file(state_file_path):
     state_file = open(state_file_path, "r")
     state_tracker = json.loads(state_file.read())
     state_file.close()
@@ -36,19 +36,19 @@ def create_state_file(state_file_path):
     # Calculate the difference between current time and the first line epoch time
     state_tracker['time_offset'] = time.time() - float(current_line_json['time'])
 
-    if time_mode == "linear":
+    if time_mode == "realtime":
         print("State File - First Timestamp", current_line_json["time"])
         print("State File - Current Timestamp:", time.time())
         print("State File - Calculated Offset: ", state_tracker['time_offset'])
 
     # Write the new state file to disk (with current_line=1 and calculated time_offset)
-    write_state_to_disk(state_tracker)
+    write_state_to_disk(state_file_path, state_tracker)
     print("Created New State File", state_file_path)
 
     return state_tracker    
 
 
-def get_data_file_length():
+def get_data_file_length(data_file_path):
     data_file = open(data_file_path, "r")
     for data_file_length, line in enumerate(data_file):
         pass
@@ -63,7 +63,7 @@ def get_line(line_number):
     return json.loads(lineData)
 
 
-def write_state_to_disk(state_tracker):
+def write_state_to_disk(state_file_path, state_tracker):
     file = open(state_file_path, "w")
     json.dump(state_tracker, file)
     file.close()       

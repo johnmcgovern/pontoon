@@ -33,15 +33,15 @@ print("State File Location: ", state_file_path)
 
 # If the state file exists and load it so we maintain state
 if os.path.exists(state_file_path): 
-    state_tracker = load_state_file()
+    state_tracker = load_state_file(state_file_path)
 
 # If state file doesn't exit, create one
 if not os.path.exists(state_file_path):
-    state_tracker = create_state_file()
+    state_tracker = create_state_file(state_file_path)
 
 # Check for data file existence and length
 if os.path.exists(data_file_path):
-   data_file_length = get_data_file_length()
+   data_file_length = get_data_file_length(data_file_path)
 
 
 # Main loop
@@ -178,7 +178,7 @@ try:
                 # Updated state file every state_trackerWriteToDiskFactor events
                 # (happens automatically on KeyboardInterrupt as well)
                 if state_tracker['current_line'] % state_tracker_write_to_disk_factor == 0:
-                    write_state_to_disk(state_tracker)
+                    write_state_to_disk(state_file_path, state_tracker)
 
                 # If we reach EoF and should_loop==True, then reset the state_tracker and start over.
                 if int(state_tracker['current_line']) == int(data_file_length) and should_loop==True:
@@ -218,7 +218,7 @@ try:
 # If we get interrupted at the keyboard (Ctrl^C)
 except KeyboardInterrupt:
     # Dump current state
-    write_state_to_disk(state_tracker)
+    write_state_to_disk(state_file_path, state_tracker)
 
     # Close our HEC session
     session.close()
