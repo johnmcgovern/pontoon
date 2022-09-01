@@ -13,6 +13,12 @@ splunk_hec_token = "9802541d-394f-4053-b973-306757e15ed3"
 splunk_index = "test"   # Currently we always override the data files index specification (but this may change)
 
 
+# "linear" or "realtime"
+# linear = equal amount of events per second
+# realtime = eps proportional to orgininal data file timestamps
+time_mode = "linear"
+time_playout_seconds = 14400 
+
 should_loop = False
 debug = False
 

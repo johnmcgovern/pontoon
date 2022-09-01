@@ -19,12 +19,14 @@ def load_state_file():
     return state_tracker
 
 def create_state_file():
-
     # Instantiate a default state_tracker JSON object
-    state_tracker = {"current_line": 1, 
-                    "time_offset": 0.0,
-                    "time_delta": 0.0, 
-                    "speed_up_offset": 0 }
+    state_tracker = {
+        "current_line": 1, 
+        "time_offset": 0.0,
+        "time_delta": 0.0, 
+        "speed_up_offset": 0,
+        "eps": 0 
+        }
 
     print("Creating New State File: ", state_file_path)
 
