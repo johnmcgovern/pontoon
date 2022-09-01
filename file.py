@@ -18,7 +18,7 @@ def load_state_file():
     print("Loaded State File: ", state_tracker)
     return state_tracker
 
-def create_state_file():
+def create_state_file(state_file_path):
     # Instantiate a default state_tracker JSON object
     state_tracker = {
         "current_line": 1, 
