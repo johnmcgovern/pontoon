@@ -17,18 +17,30 @@ from file import *
 
 print()
 
+# Optionally, take in the file key from arguments
 try:
     file_key = sys.argv[1]
     print("File key supplied as an argument:", sys.argv[1])
 except: 
-    print("No file key specified, using config.")
+    print("No file key specified, defaulting to config.")
     pass
 
 data_file_path = "./data/" + file_key + ".json"
 state_file_path = "./var/" + file_key + ".state"
 
 print("Data File Location: ", data_file_path)
-print("State File Location: ", state_file_path)
+print("State File Location: ", state_file_path, "\n")
+
+
+# Optionally, take in the index from arguments
+try:
+    splunk_index = sys.argv[2]
+    print("Index supplied as an argument:", sys.argv[2])
+except: 
+    print("No index specified, defaulting to config.")
+    pass
+
+print("Sending to Index:", splunk_index, "\n")
 
 
 # If the state file exists and load it so we maintain state
@@ -48,10 +60,8 @@ if os.path.exists(data_file_path):
 try:
     #Open a persistent tcp session to Splunk HEC 
     session = requests.session()
-    print("Begin Main Loop")
-    print("Event Batch Size:", events_per_hec_batch)
+    print("\nBegin Main Loop")
     print("Starting at Line:", state_tracker['current_line'])
-    print("Indexed to:", splunk_index)
 
 
     # Linear Mode: 
@@ -134,6 +144,7 @@ try:
     if time_mode == "realtime":
 
         print("Time Mode:", time_mode)
+        print("Event Batch Size:", events_per_hec_batch)
 
         while 1==1:
             # Get one line at a time from the data file
