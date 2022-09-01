@@ -115,26 +115,6 @@ try:
                 if state_tracker['current_line'] % state_tracker_reporting_factor == 0:
                     print("State Tracker:", state_tracker)  
 
-                # If we reach EoF and should_loop==True, then reset the state_tracker and start over.
-                if int(state_tracker['current_line']) == int(data_file_length) and should_loop==True:
-                    print("Reached EoF - Starting Over ", state_tracker)
-                    
-                    r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
-                    event_json_storage = ""
-                    
-                    state_tracker['current_line'] = 1
-                    current_line_json = get_line(int(state_tracker['current_line']))
-                    
-                    print("State Reset Completed", state_tracker)
-
-                # If we reach EoF and should_loop==False, then delete the state file and exit.
-                    if int(state_tracker['current_line']) == int(data_file_length) and should_loop==False:
-                        r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
-                        event_json_storage = ""
-                        delete_state_file(state_file_path)
-                        print("Reached EoF - Exiting")
-                        exit()
-
                 # Advance to the next line
                 state_tracker['current_line'] += 1 
 
@@ -142,6 +122,28 @@ try:
                 # Advance to the next line
                 print("Skipping Line:", state_tracker['current_line'])
                 state_tracker['current_line'] += 1 
+            
+
+            # If we reach EoF and should_loop==True, then reset the state_tracker and start over.
+            if int(state_tracker['current_line']) == int(data_file_length) and should_loop==True:
+                print("Reached EoF - Starting Over ", state_tracker)
+                
+                r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
+                event_json_storage = ""
+                
+                state_tracker['current_line'] = 1
+                current_line_json = get_line(int(state_tracker['current_line']))
+                
+                print("State Reset Completed", state_tracker)
+
+            # If we reach EoF and should_loop==False, then delete the state file and exit.
+                if int(state_tracker['current_line']) == int(data_file_length) and should_loop==False:
+                    r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
+                    event_json_storage = ""
+                    delete_state_file(state_file_path)
+                    print("Reached EoF - Exiting")
+                    exit()
+
 
     # Realtime Mode: 
     # Events play at roughly the relative EPS of the original data file
