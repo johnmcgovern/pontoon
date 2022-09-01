@@ -2,7 +2,7 @@
 # config.py - User modifiable variables.
 #
 
-# The name of the file to use. ".json" is assumed unless modified below.
+# The name of the file to use. ".json" extension is assumed unless modified below.
 # file_key can be passed as the first command line argument (i.e. main.py filekey)
 file_key = "botsv4"
 data_file_path = "./data/" + file_key + ".json"

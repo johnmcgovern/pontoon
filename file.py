@@ -68,6 +68,6 @@ def write_state_to_disk(state_file_path, state_tracker):
     json.dump(state_tracker, file)
     file.close()       
 
-def delete_state_file():
+def delete_state_file(state_file_path):
     os.remove(state_file_path)
     print("Deleted State File")

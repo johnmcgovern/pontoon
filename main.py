@@ -75,7 +75,7 @@ try:
         state_tracker['eps'] = round(data_file_length / time_playout_seconds, 0)
         if state_tracker['eps'] < 1:
             state_tracker['eps'] = 1
-        print("Events Per Second:", state_tracker['eps'])
+        print("Events Per Second:", state_tracker['eps'], "\n")
 
         timer_start = time.time()
 
@@ -131,7 +131,7 @@ try:
                 if int(state_tracker['current_line']) == int(data_file_length) and should_loop==False:
                     r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
                     event_json_storage = ""
-                    delete_state_file()
+                    delete_state_file(state_file_path)
                     print("Reached EoF - Exiting")
                     exit()
 
@@ -210,7 +210,7 @@ try:
                 if int(state_tracker['current_line']) == int(data_file_length) and should_loop==False:
                     r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
                     event_json_storage = ""
-                    delete_state_file()
+                    delete_state_file(state_file_path)
                     print("Reached EoF - Exiting")
                     exit()    
             
