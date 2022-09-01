@@ -7,12 +7,25 @@
 import json
 import os
 import requests
+import sys
 import time
 
 from config import *
 from const import *
 from file import *
 
+
+print()
+
+try:
+    file_key = sys.argv[1]
+    print("File key supplied as an argument:", sys.argv[1])
+except: 
+    print("No file key specified, using config.")
+    pass
+
+data_file_path = "./data/" + file_key + ".json"
+state_file_path = "./var/" + file_key + ".state"
 
 print("Data File Location: ", data_file_path)
 print("State File Location: ", state_file_path)
