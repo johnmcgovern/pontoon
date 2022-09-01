@@ -8,9 +8,14 @@ Features:
 - Time Compression: Speeds the replay up by a configurable amount.
 - State Tracking: Saves state before script exit so by default a restart continues off at the same line location and catches up.
 
+Modes:
+
+- "realtime" time mode was implemented first to play out events more or less second by second with some acceleration. I.e we should see ups and down in EPS mirroring how the data was originally recorded.
+- "linear" mode was built second and is a simpler mode. It takes the amount of time desired and plays out the same number of events each second to hit its time duration target.
+
 Project Notes:
 
-- This is not intended to be a data preperation framework. We use Splunk and the splunk-json-cleaner.py script for that piece.
+- This is not intended to be a data preparation framework. We use Splunk and the splunk-json-cleaner.py script for that piece.
 - Append the following to the Splunk search containing the data you want to export: 
 ```
 | sort 0 _time 
@@ -19,7 +24,7 @@ Project Notes:
 | table time index host source sourcetype event
 ```
 - This project expects the time, index, host, source, sourcetype, and event fields (not _time or _raw) to be present in each line of JSON. 
-- Currently we ignore the source index specification for convenience, but this may be togglable in the future.
+- Currently, we ignore the source index specification for convenience, but this may be togglable in the future.
 - Debug logging turns on per-line output. Use only with small datasets.
 - This project has been tested running locally on the Splunk system to approximately 5,000+ events per second (EPS).
 - Other in-memory projects are orders of magniture faster on the EPS. However, this project is built for large datasets / low resource consumption more than speed.
