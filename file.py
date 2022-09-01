@@ -36,9 +36,10 @@ def create_state_file():
     # Calculate the difference between current time and the first line epoch time
     state_tracker['time_offset'] = time.time() - float(current_line_json['time'])
 
-    print("State File - First Timestamp", current_line_json["time"])
-    print("State File - Current Timestamp:", time.time())
-    print("State File - Calculated Offset: ", state_tracker['time_offset'])
+    if time_mode == "linear":
+        print("State File - First Timestamp", current_line_json["time"])
+        print("State File - Current Timestamp:", time.time())
+        print("State File - Calculated Offset: ", state_tracker['time_offset'])
 
     # Write the new state file to disk (with current_line=1 and calculated time_offset)
     write_state_to_disk(state_tracker)

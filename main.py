@@ -71,27 +71,22 @@ try:
             # Group events together for sending as a batch
             event_json_storage += json.dumps(eventJson) + "\r\n"                            
 
-            # Mod the current_line to send as a batch per the eventsPerHecBatch factor
+            # Mod the current_line to send as a batch per the eps variable
             if state_tracker['current_line'] % state_tracker['eps'] == 0:                        
                 r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
                 event_json_storage = ""
 
-                # Sleep for the remainder of a second
+                # If the last batch completed in < 1 second (typically does), 
+                # then sleep for the remainder of the second.
                 timer_end = time.time()
                 timer_duration = timer_end - timer_start
-                if debug:
-                    print("Timer Duration:", 1 - timer_duration)
                 if 1 - timer_duration > 0:
                     time.sleep(1 - timer_duration)
+                timer_start = time.time()
 
-                    if debug:
-                        print("Sleeping for:", timer_end - timer_start)
-                
-                start_time = time.time()
-
-                # Debug reporting (every batch)
+                # Per batch debug level logging
                 if debug:
-                    print("-> Sent up to Line: ", state_tracker['current_line'])
+                    print("-> Sent up to Line:", state_tracker['current_line'], "  Sleeping:", 1 - timer_duration)
 
             # Default reporting (every 2000 events)
             if state_tracker['current_line'] % state_tracker_reporting_factor == 0:
