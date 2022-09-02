@@ -58,7 +58,7 @@ def get_data_file_length(data_file_path):
     return data_file_length
 
 
-def get_line(line_number):
+def get_line(data_file_path, line_number):
     lineData = linecache.getline(data_file_path, line_number)
     return json.loads(lineData)
 

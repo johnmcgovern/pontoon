@@ -83,7 +83,7 @@ try:
         while 1==1:
             
             # Get one line at a time from the data file
-            current_line_json = get_line(int(state_tracker['current_line']))
+            current_line_json = get_line(data_file_path, int(state_tracker['current_line']))
 
             eventJson = {"time": time.time(), 
                             "index": splunk_index, 
@@ -128,7 +128,7 @@ try:
                 event_json_storage = ""
                 
                 state_tracker['current_line'] = 1
-                current_line_json = get_line(int(state_tracker['current_line']))
+                current_line_json = get_line(data_file_path, int(state_tracker['current_line']))
                 
                 print("State Reset Completed", state_tracker)
 
@@ -150,7 +150,7 @@ try:
 
         while 1==1:
             # Get one line at a time from the data file
-            current_line_json = get_line(int(state_tracker['current_line']))
+            current_line_json = get_line(data_file_path, int(state_tracker['current_line']))
 
             if state_tracker['current_line'] % speed_up_interval == 0:
                 state_tracker['speed_up_offset'] += speed_up_factor
@@ -201,7 +201,7 @@ try:
                     event_json_storage = ""
                     
                     state_tracker['current_line'] = 1
-                    current_line_json = get_line(int(state_tracker['current_line']))
+                    current_line_json = get_line(data_file_path, int(state_tracker['current_line']))
                     
                     state_tracker['time_offset'] = time.time() - float(current_line_json['time'])
                     state_tracker['speed_up_offset'] = 0
