@@ -31,7 +31,7 @@ def create_state_file(state_file_path):
     print("Creating New State File: ", state_file_path)
 
     # Open the first line of the data file
-    current_line_json = get_line(1)
+    current_line_json = get_line(data_file_path, 1)
     
     # Calculate the difference between current time and the first line epoch time
     state_tracker['time_offset'] = time.time() - float(current_line_json['time'])
