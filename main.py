@@ -80,48 +80,43 @@ try:
         timer_start = time.time()
 
         while 1==1:
-            try: 
-                # Get one line at a time from the data file
-                current_line_json = get_line(int(state_tracker['current_line']))
+            
+            # Get one line at a time from the data file
+            current_line_json = get_line(int(state_tracker['current_line']))
 
-                eventJson = {"time": time.time(), 
-                                "index": splunk_index, 
-                                "host":current_line_json['host'], 
-                                "source":current_line_json['source'], 
-                                "sourcetype":current_line_json['sourcetype'],  
-                                "event": current_line_json['event'] }
+            eventJson = {"time": time.time(), 
+                            "index": splunk_index, 
+                            "host":current_line_json['host'], 
+                            "source":current_line_json['source'], 
+                            "sourcetype":current_line_json['sourcetype'],  
+                            "event": current_line_json['event'] }
 
-                # Group events together for sending as a batch
-                event_json_storage += json.dumps(eventJson) + "\r\n"                            
+            # Group events together for sending as a batch
+            event_json_storage += json.dumps(eventJson) + "\r\n"                            
 
-                # Mod the current_line to send as a batch per the eps variable
-                if state_tracker['current_line'] % state_tracker['eps'] == 0:                        
-                    r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
-                    event_json_storage = ""
+            # Mod the current_line to send as a batch per the eps variable
+            if state_tracker['current_line'] % state_tracker['eps'] == 0:                        
+                r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
+                event_json_storage = ""
 
-                    # If the last batch completed in < 1 second (typically does), 
-                    # then sleep for the remainder of the second.
-                    timer_end = time.time()
-                    timer_duration = timer_end - timer_start
-                    if 1 - timer_duration > 0:
-                        time.sleep(1 - timer_duration)
-                    timer_start = time.time()
+                # If the last batch completed in < 1 second (typically does), 
+                # then sleep for the remainder of the second.
+                timer_end = time.time()
+                timer_duration = timer_end - timer_start
+                if 1 - timer_duration > 0:
+                    time.sleep(1 - timer_duration)
+                timer_start = time.time()
 
-                    # Per batch debug level logging
-                    if debug:
-                        print("-> Sent up to Line:", state_tracker['current_line'], "  Sleeping:", 1 - timer_duration)
+                # Per batch debug level logging
+                if debug:
+                    print("-> Sent up to Line:", state_tracker['current_line'], "  Sleeping:", 1 - timer_duration)
 
-                # Default reporting (every 2000 events)
-                if state_tracker['current_line'] % state_tracker_reporting_factor == 0:
-                    print("State Tracker:", state_tracker)  
+            # Default reporting (every 2000 events)
+            if state_tracker['current_line'] % state_tracker_reporting_factor == 0:
+                print("State Tracker:", state_tracker)  
 
-                # Advance to the next line
-                state_tracker['current_line'] += 1 
-
-            except:                             
-                # Advance to the next line
-                print("Skipping Line:", state_tracker['current_line'])
-                state_tracker['current_line'] += 1 
+            # Advance to the next line
+            state_tracker['current_line'] += 1 
             
 
             # If we reach EoF and should_loop==True, then reset the state_tracker and start over.
@@ -242,5 +237,5 @@ except KeyboardInterrupt:
 
     # Final logs
     print("Caught Keyboard Interrupt - Quitting")
-    print("State Tracker:", state_tracker)
+    print("State Tracker Written to Disk:", state_tracker)
         
