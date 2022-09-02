@@ -79,6 +79,7 @@ try:
 
         timer_start = time.time()
 
+
         while 1==1:
             
             # Get one line at a time from the data file
