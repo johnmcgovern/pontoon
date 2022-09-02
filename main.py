@@ -132,12 +132,12 @@ try:
                 print("State Reset Completed", state_tracker)
 
             # If we reach EoF and should_loop==False, then delete the state file and exit.
-                if int(state_tracker['current_line']) == int(data_file_length) and should_loop==False:
-                    r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
-                    event_json_storage = ""
-                    delete_state_file(state_file_path)
-                    print("Reached EoF - Exiting")
-                    exit()
+            if int(state_tracker['current_line']) == int(data_file_length) and should_loop==False:
+                r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
+                event_json_storage = ""
+                delete_state_file(state_file_path)
+                print("Reached EoF - Exiting")
+                exit()
 
 
     # Realtime Mode: 
