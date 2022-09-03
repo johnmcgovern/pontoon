@@ -26,9 +26,9 @@ except:
     exit()
 
 # Handle converting relative file paths to absolute for cron purposes.
-dir_name = os.path.dirname(__file__)
-data_file_path = os.path.join(dir_name, "data/" + file_key + ".json")
-state_file_path = os.path.join(dir_name, "var/" + file_key + ".state")
+absolute_path = os.path.dirname(__file__)
+data_file_path = os.path.join(absolute_path, "data/" + file_key + ".json")
+state_file_path = os.path.join(absolute_path, "var/" + file_key + ".state")
 
 print("Data File Location: ", data_file_path)
 print("State File Location: ", state_file_path, "\n")
