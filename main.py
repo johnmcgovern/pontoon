@@ -22,8 +22,8 @@ try:
     file_key = sys.argv[1]
     print("File key supplied as an argument:", sys.argv[1])
 except: 
-    print("No file key specified, defaulting to config.")
-    pass
+    print("No file key specified, exiting.")
+    exit()
 
 data_file_path = "./data/" + file_key + ".json"
 state_file_path = "./var/" + file_key + ".state"
@@ -58,174 +58,90 @@ if os.path.exists(data_file_path):
 
 # Main loop
 try:
+
     #Open a persistent tcp session to Splunk HEC 
     session = requests.session()
     print("\nBegin Main Loop")
     print("Starting at Line:", state_tracker['current_line'])
 
 
-    # Linear Mode: 
-    # Events play based on a fixed EPS (eventCount / desiredDuration)
-    if time_mode == "linear":
+    state_tracker['time_window'] = time_playout_seconds
 
-        print("Time Mode:", time_mode)
+    state_tracker['eps'] = round(data_file_length / time_playout_seconds, 0)
+    if state_tracker['eps'] < 1:
+        state_tracker['eps'] = 1
+    print("Events Per Second:", state_tracker['eps'], "\n")
 
-        state_tracker['time_offset'] = time_playout_seconds
-
-        state_tracker['eps'] = round(data_file_length / time_playout_seconds, 0)
-        if state_tracker['eps'] < 1:
-            state_tracker['eps'] = 1
-        print("Events Per Second:", state_tracker['eps'], "\n")
-
-        timer_start = time.time()
+    timer_start = time.time()
 
 
-        while 1==1:
+    # Per line loop
+    while 1==1:
+        
+        # Get one line at a time from the data file
+        current_line_json = get_line(data_file_path, int(state_tracker['current_line']))
+
+        eventJson = {"time": time.time(), 
+                        "index": splunk_index, 
+                        "host":current_line_json['host'], 
+                        "source":current_line_json['source'], 
+                        "sourcetype":current_line_json['sourcetype'],  
+                        "event": current_line_json['event'] }
+
+        # Group events together for sending as a batch
+        event_json_storage += json.dumps(eventJson) + "\r\n"                            
+
+        # Mod the current_line to send as a batch per the eps variable
+        if state_tracker['current_line'] % state_tracker['eps'] == 0:                        
             
-            # Get one line at a time from the data file
-            current_line_json = get_line(data_file_path, int(state_tracker['current_line']))
+            # Write batch to HEC
+            r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
+            event_json_storage = ""
 
-            eventJson = {"time": time.time(), 
-                            "index": splunk_index, 
-                            "host":current_line_json['host'], 
-                            "source":current_line_json['source'], 
-                            "sourcetype":current_line_json['sourcetype'],  
-                            "event": current_line_json['event'] }
+            # If the last batch completed in < 1 second (typically does), 
+            # then sleep for the remainder of the second.
+            timer_end = time.time()
+            timer_duration = timer_end - timer_start
+            if 1 - timer_duration > 0:
+                time.sleep(1 - timer_duration)
+            timer_start = time.time()
 
-            # Group events together for sending as a batch
-            event_json_storage += json.dumps(eventJson) + "\r\n"                            
-
-            # Mod the current_line to send as a batch per the eps variable
-            if state_tracker['current_line'] % state_tracker['eps'] == 0:                        
-                r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
-                event_json_storage = ""
-
-                # If the last batch completed in < 1 second (typically does), 
-                # then sleep for the remainder of the second.
-                timer_end = time.time()
-                timer_duration = timer_end - timer_start
-                if 1 - timer_duration > 0:
-                    time.sleep(1 - timer_duration)
-                timer_start = time.time()
-
-                # Per batch debug level logging
-                if debug:
-                    print("-> Sent up to Line:", state_tracker['current_line'], "  Sleeping:", 1 - timer_duration)
-
-            # Default reporting (every 2000 events)
-            if state_tracker['current_line'] % state_tracker_reporting_factor == 0:
-                print("State Tracker:", state_tracker)  
-
-            # Advance to the next line
-            state_tracker['current_line'] += 1 
-            
-
-            # If we reach EoF and should_loop==True, then reset the state_tracker and start over.
-            if int(state_tracker['current_line']) == int(data_file_length) and should_loop==True:
-                print("Reached EoF - Starting Over ", state_tracker)
-                
-                r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
-                event_json_storage = ""
-                
-                state_tracker['current_line'] = 1
-                current_line_json = get_line(data_file_path, int(state_tracker['current_line']))
-                
-                print("State Reset Completed", state_tracker)
-
-            # If we reach EoF and should_loop==False, then delete the state file and exit.
-            if int(state_tracker['current_line']) == int(data_file_length) and should_loop==False:
-                r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
-                event_json_storage = ""
-                delete_state_file(state_file_path)
-                print("Reached EoF - Exiting")
-                exit()
-
-
-    # Realtime Mode: 
-    # Events play at roughly the relative EPS of the original data file
-    if time_mode == "realtime":
-
-        print("Time Mode:", time_mode)
-        print("Event Batch Size:", events_per_hec_batch)
-
-        while 1==1:
-            # Get one line at a time from the data file
-            current_line_json = get_line(data_file_path, int(state_tracker['current_line']))
-
-            if state_tracker['current_line'] % speed_up_interval == 0:
-                state_tracker['speed_up_offset'] += speed_up_factor
-
-            # If time_delta is positive, we can output logs. 
-            # If time_delta is negative we sleep for a fraction of a second (sometime multiple times) to keep in sync with current time.
-            state_tracker['time_delta'] = (time.time() + float(state_tracker['speed_up_offset'])) - (float(current_line_json['time']) + float(state_tracker['time_offset']))
-
+            # Per batch debug level logging
             if debug:
-                print("State Tracker:", state_tracker)
+                print("-> Sent up to Line:", state_tracker['current_line'], "  Sleeping:", 1 - timer_duration)
 
-            # Send a log message to Splunk via HEC
-            if state_tracker['time_delta'] >= 0:
-                sleep_counter = 0
-                eventJson = {"time": time.time(), 
-                            "index": splunk_index, 
-                            "host":current_line_json['host'], 
-                            "source":current_line_json['source'], 
-                            "sourcetype":current_line_json['sourcetype'],  
-                            "event": current_line_json['event'] }
+        # Default reporting (every 2000 events)
+        if state_tracker['current_line'] % state_tracker_reporting_factor == 0:
+            print("State Tracker:", state_tracker)  
 
-                # Group events together for sending as a batch
-                event_json_storage += json.dumps(eventJson) + "\r\n"
+        # Advance to the next line
+        state_tracker['current_line'] += 1 
+        
 
-                # Mod the current_line to send as a batch per the eventsPerHecBatch factor
-                if state_tracker['current_line'] % events_per_hec_batch == 0:                        
-                    r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
-                    event_json_storage = ""
-
-                    # Debug reporting (every batch)
-                    if debug:
-                        print("-> Sent up to Line: ", state_tracker['current_line'])
-    
-                # Default reporting (every 2000 events)
-                if state_tracker['current_line'] % state_tracker_reporting_factor == 0:
-                    print("State Tracker:", state_tracker)
-
-                # Updated state file every state_trackerWriteToDiskFactor events
-                # (happens automatically on KeyboardInterrupt as well)
-                if state_tracker['current_line'] % state_tracker_write_to_disk_factor == 0:
-                    write_state_to_disk(state_file_path, state_tracker)
-
-                # If we reach EoF and should_loop==True, then reset the state_tracker and start over.
-                if int(state_tracker['current_line']) == int(data_file_length) and should_loop==True:
-                    print("Reached EoF - Starting Over ", state_tracker)
-                    
-                    r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
-                    event_json_storage = ""
-                    
-                    state_tracker['current_line'] = 1
-                    current_line_json = get_line(data_file_path, int(state_tracker['current_line']))
-                    
-                    state_tracker['time_offset'] = time.time() - float(current_line_json['time'])
-                    state_tracker['speed_up_offset'] = 0
-                    
-                    print("State Reset Completed", state_tracker)
-
-                # If we reach EoF and should_loop==False, then delete the state file and exit.
-                if int(state_tracker['current_line']) == int(data_file_length) and should_loop==False:
-                    r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
-                    event_json_storage = ""
-                    delete_state_file(state_file_path)
-                    print("Reached EoF - Exiting")
-                    exit()    
+        # If we reach EoF and should_loop==True, then reset the state_tracker and start over.
+        if int(state_tracker['current_line']) == int(data_file_length) and should_loop==True:
             
-                # Advance to the next line
-                state_tracker['current_line'] += 1
+            print("Reached EoF - Starting Over ", state_tracker)
+            
+            # Write batch to HEC
+            r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
+            
+            event_json_storage = ""
+            state_tracker['current_line'] = 1
+            
+            print("State Reset Completed", state_tracker)
 
-            else:
-                # If we don't have any data available for the given second then sleep.
-                # Fast forward number of times slept (sleep_counter) to the power of itself
-                # so we don't have to sleep too long.
-                sleep_counter += 1
-                state_tracker['speed_up_offset'] += (sleep_counter ** 2)
-                time.sleep(.98)
+        # If we reach EoF and should_loop==False, then delete the state file and exit.
+        if int(state_tracker['current_line']) == int(data_file_length) and should_loop==False:
+            
+            # Write batch to HEC
+            r = session.post(splunk_url + splunk_hec_event_endpoint, headers=splunk_auth_header, data=event_json_storage, verify=False)
+            
+            event_json_storage = ""
+            delete_state_file(state_file_path)
+            
+            print("Reached EoF - Exiting")
+            exit()
 
 
 # If we get interrupted at the keyboard (Ctrl^C)

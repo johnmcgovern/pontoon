@@ -5,7 +5,6 @@
 import json
 import linecache
 import os
-import time
 
 from config import *
 from const import *
@@ -22,24 +21,11 @@ def create_state_file(state_file_path):
     # Instantiate a default state_tracker JSON object
     state_tracker = {
         "current_line": 1, 
-        "time_offset": 0.0,
-        "time_delta": 0.0, 
-        "speed_up_offset": 0,
-        "eps": 0 
+        "eps": 0, 
+        "time_window": 0.0,
         }
 
     print("Creating New State File: ", state_file_path)
-
-    # Open the first line of the data file
-    current_line_json = get_line(data_file_path, 1)
-    
-    # Calculate the difference between current time and the first line epoch time
-    state_tracker['time_offset'] = time.time() - float(current_line_json['time'])
-
-    if time_mode == "realtime":
-        print("State File - First Timestamp", current_line_json["time"])
-        print("State File - Current Timestamp:", time.time())
-        print("State File - Calculated Offset: ", state_tracker['time_offset'])
 
     # Write the new state file to disk (with current_line=1 and calculated time_offset)
     write_state_to_disk(state_file_path, state_tracker)
