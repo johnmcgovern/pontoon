@@ -25,8 +25,10 @@ except:
     print("No file key specified, exiting.")
     exit()
 
-data_file_path = "./data/" + file_key + ".json"
-state_file_path = "./var/" + file_key + ".state"
+dir_name = os.path.dirname(__file__)
+
+data_file_path = os.path.join(dir_name, "data/" + file_key + ".json")
+state_file_path = os.path.join(dir_name, "var/" + file_key + ".state")
 
 print("Data File Location: ", data_file_path)
 print("State File Location: ", state_file_path, "\n")
