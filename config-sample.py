@@ -10,8 +10,8 @@ splunk_hec_token = "9802541d-394f-4053-b973-306757e15ed3"
 splunk_index = "test"
 
 
-# Linear mode settings
-time_playout_seconds = 14400  
+# Playout settings
+time_playout_seconds = 43200  # default 12 hours
 
 # Should the script restart at EoF
 should_loop = False
