@@ -25,8 +25,8 @@ except:
     print("No file key specified, exiting.")
     exit()
 
+# Handle converting relative file paths to absolute for cron purposes.
 dir_name = os.path.dirname(__file__)
-
 data_file_path = os.path.join(dir_name, "data/" + file_key + ".json")
 state_file_path = os.path.join(dir_name, "var/" + file_key + ".state")
 
