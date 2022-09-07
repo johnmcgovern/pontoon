@@ -17,7 +17,7 @@ from file import *
 
 print()
 
-# Optionally, take in the file key from arguments
+# Take in the file key from arguments (mandatory)
 try:
     file_key = sys.argv[1]
     print("File key supplied as an argument:", sys.argv[1])
