@@ -45,6 +45,17 @@ except:
 print("Sending to Index:", splunk_index, "\n")
 
 
+# Optionally, take in the playout duration from arguments
+try:
+    time_playout_seconds = int(sys.argv[3])
+    print("Playout duration supplied as an argument:", sys.argv[3])
+except: 
+    print("No playout duration, defaulting to config.")
+    pass
+
+print("Playout Duration in Seconds:", time_playout_seconds, "\n")
+
+
 # If the state file exists and load it so we maintain state
 if os.path.exists(state_file_path): 
     state_tracker = load_state_file(state_file_path)
