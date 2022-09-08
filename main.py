@@ -167,5 +167,4 @@ except KeyboardInterrupt:
 
     # Final logs
     print("Caught Keyboard Interrupt - Quitting")
-    print("State Tracker Written to Disk:", state_tracker)
-        
+    print("State Tracker Written to Disk:", state_tracker, "\n\n")
