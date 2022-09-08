@@ -19,6 +19,5 @@ should_loop = False
 # Per event logging
 debug = False
 
-# How often to log and write state to disk
+# How often to log progress
 state_tracker_reporting_factor = 2000
-state_tracker_write_to_disk_factor = 1000
