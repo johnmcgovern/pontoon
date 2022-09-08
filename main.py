@@ -125,7 +125,11 @@ try:
 
         # Default reporting (every 2000 events)
         if state_tracker['current_line'] % state_tracker_reporting_factor == 0:
-            print("State Tracker:", state_tracker)  
+            print("State Tracker:", state_tracker) 
+
+        # Default state file write to disk (every 1000 events)
+        if state_tracker['current_line'] % state_tracker_write_to_disk_factor == 0:
+            write_state_to_disk(state_file_path, state_tracker) 
 
         # Advance to the next line
         state_tracker['current_line'] += 1 
