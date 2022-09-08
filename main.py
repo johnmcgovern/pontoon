@@ -85,6 +85,8 @@ try:
         state_tracker['eps'] = 1
     print("Events Per Second:", state_tracker['eps'], "\n")
 
+    write_state_to_disk(state_file_path, state_tracker) 
+
     timer_start = time.time()
 
 
