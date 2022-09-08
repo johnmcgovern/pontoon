@@ -29,7 +29,7 @@ def create_state_file(state_file_path):
 
     # Write the new state file to disk (with current_line=1 and calculated time_offset)
     write_state_to_disk(state_file_path, state_tracker)
-    print("Created New State File", state_file_path)
+    print("Created New State File", state_file_path, "\n")
 
     return state_tracker    
 
@@ -40,7 +40,7 @@ def get_data_file_length(data_file_path):
         pass
     data_file_length += 1
     data_file.close()
-    print("Data File Length:", data_file_length)
+    print("Data File Length:", data_file_length, "\n")
     return data_file_length
 
 
