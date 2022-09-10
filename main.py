@@ -54,6 +54,11 @@ if not os.path.exists(state_file_path):
     state_tracker = create_state_file(state_file_path)
 
 # Check for data file existence and length
+if not os.path.exists(data_file_path):
+    print("Data file not found:", data_file_path)
+    print("Exiting.\n")
+    exit()
+
 if os.path.exists(data_file_path):
    data_file_length = get_data_file_length(data_file_path)
 
@@ -97,7 +102,7 @@ try:
         # Get one line at a time from the data file
         current_line_json = get_line(data_file_path, int(state_tracker['current_line']))
 
-        eventJson = {"time": time.time(), 
+        event = {"time": time.time(), 
                         "index": splunk_index, 
                         "host":current_line_json['host'], 
                         "source":current_line_json['source'], 
@@ -105,7 +110,7 @@ try:
                         "event": current_line_json['event'] }
 
         # Group events together for sending as a batch
-        event_json_storage += json.dumps(eventJson) + "\r\n"                            
+        event_json_storage += json.dumps(event) + "\r\n"                            
 
         # Mod the current_line to send as a batch per the eps variable
         if state_tracker['current_line'] % state_tracker['eps'] == 0:                        
