@@ -10,6 +10,7 @@ import requests
 import sys
 import time
 
+from cleaner import *
 from config import *
 from const import *
 from file import *
@@ -102,12 +103,12 @@ try:
         # Get one line at a time from the data file
         current_line_json = get_line(data_file_path, int(state_tracker['current_line']))
 
-        event = {"time": time.time(), 
+        event = cleaner({"time": time.time(), 
                         "index": splunk_index, 
-                        "host":current_line_json['host'], 
-                        "source":current_line_json['source'], 
-                        "sourcetype":current_line_json['sourcetype'],  
-                        "event": current_line_json['event'] }
+                        "host": current_line_json['host'], 
+                        "source": current_line_json['source'], 
+                        "sourcetype": current_line_json['sourcetype'],  
+                        "event": current_line_json['event'] })
 
         # Group events together for sending as a batch
         event_json_storage += json.dumps(event) + "\r\n"                            
