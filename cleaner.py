@@ -16,7 +16,7 @@
 # and remove this specialized / use cases specific code
 # from the main logical flow.
 def cleaner(event):
-    if event['host'] == "" and "pan:" in event['sourcetype']:
+    if (event['host'] == "" or event['host'] == "host::") and "pan:" in event['sourcetype']:
         event['host'] = "pan-fw-1"
 
     return event
