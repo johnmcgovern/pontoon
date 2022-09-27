@@ -113,7 +113,7 @@ try:
         # Group events together for sending as a batch
         event_json_storage += json.dumps(event) + "\r\n"                            
 
-        # Mod the current_line to send as a batch per the eps variable
+        # Mod the current_line to send events as a batch per the eps variable
         if state_tracker['current_line'] % state_tracker['eps'] == 0:                        
             
             # Write batch to HEC
